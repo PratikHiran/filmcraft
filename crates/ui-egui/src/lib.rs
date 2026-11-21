@@ -29,6 +29,7 @@ macro_rules! tlf {
     };
 }
 
+pub mod ai;
 pub mod automation;
 pub mod brand;
 pub mod calc;
@@ -368,6 +369,7 @@ pub struct FilmcraftApp {
     /// The menu tree last sent to `hooks.menu_changed` (the native menu bar).
     menu_sent: Vec<menus::MenuItem>,
     /// Keyboard Shortcuts dialog state.
+    pub assistant: ai::AssistantState,
     pub shortcut_editor: panels::shortcuts_dialog::EditorState,
     pub toast: Option<(String, f64)>,
     pub tl: panels::timeline::TlState,
@@ -596,6 +598,7 @@ impl FilmcraftApp {
             bindings: Vec::new(),
             bindings_rev: 0,
             menu_sent: Vec::new(),
+            assistant: ai::AssistantState::new(),
             shortcut_editor: Default::default(),
             toast: None,
             graphics_notice: None,
@@ -1859,6 +1862,7 @@ impl FilmcraftApp {
         // the Timeline has had its chance to place a file drop this frame; anything left stays a bin import
         self.pending_timeline_drop = None;
         panels::dialogs::show(self, &ctx);
+        ai::ui::show(self, &ctx);
         if !self.ui.show_status_bar {
             // no bar to draw the job in, but a finished preview render still plays
             self.watch_jobs(ui.ctx());

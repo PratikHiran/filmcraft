@@ -133,7 +133,24 @@ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
         ui.painter().galley(pos2(r.min.x + 25.0, r.center().y - g.size().y / 2.0), g, Color32::WHITE);
         // Localized menus and user titles can be wider than English. Use the actual gap.
         let left = left_end + 12.0;
-        let right = r.min.x - 12.0;
+        let ai_g = p.layout_no_wrap("AI Assistant".to_string(), Tokens::ui(12.0), if app.assistant.open { t.accent } else { t.text_dim });
+        let ai_w = ai_g.size().x + 20.0;
+        let ai_r = Rect::from_min_size(pos2(r.min.x - ai_w - 10.0, rect.center().y - 12.0), vec2(ai_w, 24.0));
+        let ai_resp = ui.interact(ai_r, egui::Id::new("hdr-ai-assistant"), Sense::click()).on_hover_text("Toggle AI Editing Assistant");
+        app.auto.add("header.aiAssistant", ai_r, "AI Assistant");
+        let ai_bg = if ai_resp.hovered() {
+            t.hover
+        } else if app.assistant.open {
+            t.tab_bg
+        } else {
+            t.header_bg
+        };
+        ui.painter().rect_filled(ai_r, 4.0, ai_bg);
+        ui.painter().galley(pos2(ai_r.min.x + 10.0, rect.center().y - ai_g.size().y / 2.0), ai_g, if app.assistant.open || ai_resp.hovered() { t.accent } else { t.text_dim });
+        if ai_resp.clicked() {
+            app.assistant.open = !app.assistant.open;
+        }
+        let right = ai_r.min.x - 12.0;
         if right > left + 40.0 {
             let mut job = egui::text::LayoutJob::simple_singleline(title, Tokens::ui(14.0), t.tab_text_active);
             job.wrap.max_width = right - left;
